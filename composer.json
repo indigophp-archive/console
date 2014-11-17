@@ -12,7 +12,10 @@
     ],
     "require": {
         "php": ">=5.4.0",
-        "league/climate": "~2.5.0"
+        "league/climate": "~2.5.0",
+        "league/event": "~1.0.0",
+        "filp/whoops": "~1.1.0",
+        "psr/log": "~1.0.0"
     },
     "require-dev": {
         "phpspec/phpspec": "~2.0",
@@ -21,6 +24,14 @@
     "autoload": {
         "psr-4": {
             "Indigo\\Console\\": "src/"
+        },
+        "psr-0": {
+            "Whoops\\": "lib/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Indigo\\Console\\Stub\\": "stub/"
         }
     },
     "config": {
