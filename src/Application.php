@@ -81,6 +81,11 @@ class Application
         return $this->version;
     }
 
+    /**
+     * Sets or removes the exception handler
+     *
+     * @param Whoops $handler
+     */
     public function setExceptionHandler(Whoops $handler = null)
     {
         if (!is_null($this->exceptionHandler)) {
