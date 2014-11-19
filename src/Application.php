@@ -21,8 +21,6 @@ use Whoops\Run as Whoops;
  */
 class Application
 {
-    use Router;
-
     /**
      * @var string
      */
@@ -37,6 +35,18 @@ class Application
      * @var Whoops
      */
     protected $exceptionHandler;
+
+    /**
+     * @var Command[]
+     */
+    protected $commands = [];
+
+    /**
+     * Default command name
+     *
+     * @var string
+     */
+    protected $defaultCommand;
 
     /**
      * @param string $name
@@ -85,6 +95,82 @@ class Application
     }
 
     /**
+     * Returns a command by its name
+     *
+     * @param string $command
+     *
+     * @return Command
+     */
+    public function getCommand($command)
+    {
+        $this->ensureCommandExists($command);
+
+        return $this->commands[$command];
+    }
+
+    /**
+     * Returns all commands
+     *
+     * @return Command[]
+     */
+    public function getCommands()
+    {
+        return $this->commands;
+    }
+
+    /**
+     * Checks whether the command exists
+     *
+     * @param string $name
+     *
+     * @return boolean
+     */
+    public function hasCommand($name)
+    {
+        return isset($this->commands[$name]);
+    }
+
+    /**
+     * Adds a command to the application
+     *
+     * @param Command $command
+     */
+    public function addCommand(Command $command)
+    {
+        $this->commands[$command->getName()] = $command;
+    }
+
+    /**
+     * Adds an array of Commands to the application
+     *
+     * @param Command[] $commands
+     */
+    public function addCommands(array $commands)
+    {
+        foreach ($commands as $command) {
+            $this->addCommand($command);
+        }
+    }
+
+    /**
+     * Sets the default command
+     *
+     * @param string $command
+     */
+    public function setDefaultCommand($command)
+    {
+        if ($command instanceof Command) {
+            if (!$this->hasCommand($name)) {
+                $this->addCommand($command);
+            }
+
+            $command = $command->getName();
+        }
+
+        $this->ensureCommandExists($name);
+    }
+
+    /**
      * Runs the application's proper command
      *
      * @return integer
@@ -116,5 +202,19 @@ class Application
     protected function getDefaultCommands()
     {
         return [new Command\Ls($this)];
+    }
+
+    /**
+     * Ensures that a command exists
+     *
+     * @param string $command
+     *
+     * @throws CommandNotFound If $command is not found in the application
+     */
+    private function ensureCommandExists($command)
+    {
+        if (!$this->hasCommand($command)) {
+            throw new CommandNotFound($command, $this->commands);
+        }
     }
 }
