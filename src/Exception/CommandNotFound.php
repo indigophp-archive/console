@@ -43,6 +43,8 @@ class CommandNotFound extends \RuntimeException implements ControlsTraceOutput
     {
         $this->command = $command;
         $this->commands = $commands;
+
+        // If alternatives are added as a second argument, the message should be modified based on that?
     }
 
     /**

@@ -31,7 +31,7 @@ class Call implements Command
      */
     public function __construct(
         callable $callable,
-        $name = 'Callable command',
+        $name,
         $description = 'This command accepts a callable and invokes it as execution'
     ) {
         $this->callable = $callable;

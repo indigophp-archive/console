@@ -102,15 +102,15 @@ class Application
     /**
      * Returns a command by its name
      *
-     * @param string $command
+     * @param string $name
      *
      * @return Command
      */
-    public function getCommand($command)
+    public function getCommand($name)
     {
-        $this->ensureCommandExists($command);
+        $this->ensureCommandExists($name);
 
-        return $this->commands[$command];
+        return $this->commands[$name];
     }
 
     /**
@@ -160,23 +160,17 @@ class Application
     /**
      * Sets the default command
      *
-     * @param string $command
+     * @param string $name
      */
-    public function setDefaultCommand($command)
+    public function setDefaultCommand($name)
     {
-        if ($command instanceof Command) {
-            if (!$this->hasCommand($name)) {
-                $this->addCommand($command);
-            }
-
-            $command = $command->getName();
-        }
-
         $this->ensureCommandExists($name);
+
+        $this->defaultCommand = $name;
     }
 
     /**
-     * Runs the application's proper command
+     * Runs the application
      *
      * @return integer
      */
@@ -186,7 +180,10 @@ class Application
             $output = new CLImate;
         }
 
+        // The first argument is always the command name
         $name = array_shift($args);
+
+        // Argument/option validation should be here?
 
         if (empty($name)) {
             $name = $this->defaultCommand;
