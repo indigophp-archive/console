@@ -45,14 +45,16 @@ class Ls extends Basic
     public function execute(array $args, CLImate $output)
     {
         $commands = $this->application->getCommands();
-        $columns = [];
+        $table = [];
 
         foreach ($commands as $name => $command) {
-            $columns[] = sprintf('<green>%s</green>', $name);
-            $columns[] = $command->getDescription();
+            $table[] = [
+                sprintf('<green>%s</green>', $name),
+                $command->getDescription(),
+            ];
         }
 
         $output->yellow('Available commands:');
-        $output->columns($columns, 2);
+        $output->table($table);
     }
 }
