@@ -11,6 +11,7 @@
 
 namespace Indigo\Console;
 
+use Ulrichsg\Getopt\Getopt;
 use League\CLImate\CLImate;
 use Whoops\Run as Whoops;
 
@@ -47,6 +48,13 @@ class Application
      * @var string
      */
     protected $defaultCommand;
+
+    /**
+     * The application should exit when the command is executed
+     *
+     * @var boolean
+     */
+    protected $autoExit = true;
 
     /**
      * @param string $name
@@ -170,20 +178,34 @@ class Application
     }
 
     /**
+     * The application should exit when the command is executed
+     *
+     * @param boolean $autoExit
+     */
+    public function setAutoExit($autoExit = true)
+    {
+        $this->autoExit = (bool) $autoExit;
+    }
+
+    /**
      * Runs the application
+     *
+     * @param Getopt  $getopt
+     * @param CLImate $output
      *
      * @return integer
      */
-    public function run(array $args, CLImate $output = null)
+    public function run(Getopt $getopt = null, CLImate $output = null)
     {
         if (is_null($output)) {
             $output = new CLImate;
         }
 
-        // The first argument is always the command name
-        $name = array_shift($args);
+        // if version option is passed return it
 
-        // Argument/option validation should be here?
+        // The first argument is always the command name
+        // except help option is passed
+        $name = array_shift($args);
 
         if (empty($name)) {
             $name = $this->defaultCommand;
@@ -191,9 +213,11 @@ class Application
 
         $command = $this->getCommand($name);
 
+        // Argument/option validation should be here?
+
         $exitCode = $command->execute($args, $output);
 
-        return is_numeric($exitCode) ? (int) $exitCode : 0;
+        return $this->doExit($exitCode);
     }
 
     /**
@@ -218,5 +242,43 @@ class Application
         if (!$this->hasCommand($command)) {
             throw new CommandNotFound($command, $this->commands);
         }
+    }
+
+    /**
+     * Exits the application
+     *
+     * @param mixed $code
+     *
+     * @return integer
+     */
+    private function doExit($code)
+    {
+        $code = $this->normalizeExitCode($code, $this->autoExit);
+
+        if ($this->autoExit) {
+            exit($code);
+        }
+
+        return $code;
+    }
+
+    /**
+     * Normalizes exit code
+     *
+     * @param mixed   $code
+     * @param boolean $validate
+     *
+     * @return integer
+     */
+    private function normalizeExitCode($code, $validate = false)
+    {
+        $code = is_numeric($code) ? (int) $code : 0;
+
+        // Maximum value of real exit code is 255
+        if ($validate and $code > 255) {
+            $code = 255;
+        }
+
+        return $code;
     }
 }

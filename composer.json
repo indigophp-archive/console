@@ -15,6 +15,7 @@
         "league/climate": "~2.5.0",
         "league/event": "~1.0.0",
         "filp/whoops": "~1.1.0",
+        "ulrichsg/getopt-php": "2.2.0",
         "psr/log": "~1.0.0"
     },
     "require-dev": {

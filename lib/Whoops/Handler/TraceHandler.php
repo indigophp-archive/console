@@ -12,6 +12,7 @@
 namespace Whoops\Handler;
 
 use Whoops\Exception\Frame;
+use Whoops\Exception\Internal;
 
 /**
  * Handler for Trace output
@@ -29,37 +30,48 @@ abstract class TraceHandler extends Handler
      *
      * @var boolean
      */
-    protected $shouldAddTrace = true;
+    protected $addTrace = true;
 
     /**
      * Add function arguments to the trace
      *
      * @var boolean|integer
      */
-    protected $shouldAddFunctionArgs = false;
+    protected $addFunctionArgs = false;
 
     /**
      * Function argument limit
      *
      * @var integer
      */
-    protected $traceFunctionArgsLimit = 1024;
+    protected $functionArgsLimit = 1024;
 
     /**
-     * Checks whether an exception having trace control should be ignored
+     * Checks whether internal exceptions should be included in the trace
      *
      * @var boolean
      */
-    protected $ignoreTraceControl = false;
+    protected $includeInternal = false;
 
     /**
      * Add error trace to output
      *
-     * @param boolean $shouldAddTrace
+     * @param boolean $addTrace
      */
-    public function shouldAddTrace($shouldAddTrace = true)
+    public function addTrace($addTrace = true)
     {
-        $this->shouldAddTrace = (bool) $shouldAddTrace;
+        $this->addTrace = (bool) $addTrace;
+    }
+
+    /**
+     * Checks whether handler can add trace to the output
+     *
+     * @return boolean
+     */
+    protected function canAddTrace()
+    {
+        return $this->addTrace and
+        (!$this->getInspector()->getException() instanceof Internal or $this->includeInternal);
     }
 
     /**
@@ -67,15 +79,15 @@ abstract class TraceHandler extends Handler
      *
      * Set to True for all frame args, or integer for the n first frame args
      *
-     * @param  boolean $shouldAddFunctionArgs
+     * @param  boolean $addFunctionArgs
      */
-    public function shouldAddFunctionArgs($shouldAddFunctionArgs = true)
+    public function addFunctionArgs($addFunctionArgs = true)
     {
-        if (!is_integer($shouldAddFunctionArgs)) {
-            $shouldAddFunctionArgs = (bool) $shouldAddFunctionArgs;
+        if (!is_integer($addFunctionArgs)) {
+            $addFunctionArgs = (bool) $addFunctionArgs;
         }
 
-        $this->shouldAddFunctionArgs = $shouldAddFunctionArgs;
+        $this->addFunctionArgs = $addFunctionArgs;
     }
 
     /**
@@ -85,19 +97,19 @@ abstract class TraceHandler extends Handler
      *
      * @param integer
      */
-    public function setTraceFunctionArgsLimit($traceFunctionArgsLimit)
+    public function setFunctionArgsLimit($functionArgsLimit)
     {
-        $this->traceFunctionArgsLimit = (int) $traceFunctionArgsLimit;
+        $this->functionArgsLimit = (int) $functionArgsLimit;
     }
 
     /**
-     * Sets the ignore trace control check
+     * Include internal exceptions in trace
      *
-     * @param boolean $ignoreTraceControl
+     * @param boolean $includeInternal
      */
-    public function ignoreTraceControl($ignoreTraceControl = true)
+    public function includeInternalExceptions($includeInternal = true)
     {
-        $this->ignoreTraceControl = (bool) $ignoreTraceControl;
+        $this->includeInternal = (bool) $includeInternal;
     }
 
     /**
@@ -109,34 +121,32 @@ abstract class TraceHandler extends Handler
     {
         $response = '';
 
-        if ($this->shouldAddTrace) {
-            $inspector = $this->getInspector();
-            $frames = $inspector->getFrames();
-            $response = "\nStack trace:";
-            $line = 1;
+        $inspector = $this->getInspector();
+        $frames = $inspector->getFrames();
+        $response = "\nStack trace:";
+        $line = 1;
 
-            foreach ($frames as $frame) {
-                /** @var Frame $frame */
-                $class = $frame->getClass();
-                $template = $class ? "\n%3d. %s->%s() %s:%d%s" : "\n%3d. %s%s() %s:%d%s";
-                $frameArgs = '';
+        foreach ($frames as $frame) {
+            /** @var Frame $frame */
+            $class = $frame->getClass();
+            $template = $class ? "\n%3d. %s->%s() %s:%d%s" : "\n%3d. %s%s() %s:%d%s";
+            $frameArgs = '';
 
-                if ($this->shouldAddFunctionArgs === true or $this->shouldAddFunctionArgs < $line) {
-                    $frameArgs = $this->getFrameArgs($frame);
-                }
-
-                $response .= sprintf(
-                    $template,
-                    $line,
-                    $class,
-                    $frame->getFunction(),
-                    $frame->getFile(),
-                    $frame->getLine(),
-                    $frameArgs
-                );
-
-                $line++;
+            if ($this->addFunctionArgs === true or $this->addFunctionArgs < $line) {
+                $frameArgs = $this->getFrameArgs($frame);
             }
+
+            $response .= sprintf(
+                $template,
+                $line,
+                $class,
+                $frame->getFunction(),
+                $frame->getFile(),
+                $frame->getLine(),
+                $frameArgs
+            );
+
+            $line++;
         }
 
         return $response;
@@ -154,14 +164,14 @@ abstract class TraceHandler extends Handler
         // Dump the arguments:
         ob_start();
         var_dump($frame->getArgs());
-        if (ob_get_length() > $this->traceFunctionArgsLimit) {
+        if (ob_get_length() > $this->functionArgsLimit) {
             // The argument var_dump is to big.
             // Discarded to limit memory usage.
             ob_clean();
             return sprintf(
                 "\n%sArguments dump length greater than %d Bytes. Discarded.",
                 self::VAR_DUMP_PREFIX,
-                $this->traceFunctionArgsLimit
+                $this->functionArgsLimit
             );
         }
 

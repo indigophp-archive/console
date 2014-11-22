@@ -12,16 +12,8 @@
 namespace Whoops\Exception;
 
 /**
- * Implement this interface to explicitly control stack trace
+ * Internal exceptions should not have a trace unless explicitly set
  *
  * @author Márk Sági-Kazár <mark.sagikazar@gmail.com>
  */
-interface ControlsTraceOutput
-{
-    /**
-     * Controls whether trace output should be added
-     *
-     * @return boolean Returns true if trace can be added, false if not
-     */
-    public function canAddTrace();
-}
+interface Internal { }

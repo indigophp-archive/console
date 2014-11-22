@@ -57,18 +57,4 @@ interface Command
      * @return integer Exit code
      */
     public function execute(array $args, CLImate $output);
-
-    /**
-     * Returns the application object
-     *
-     * @return Application
-     */
-    public function getApplication();
-
-    /**
-     * Sets the application object
-     *
-     * @param Application $application
-     */
-    public function setApplication(Application $application = null);
 }

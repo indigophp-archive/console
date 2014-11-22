@@ -11,7 +11,7 @@
 
 namespace Indigo\Console\Exception;
 
-use Whoops\Exception\ControlsTraceOutput;
+use Whoops\Exception\Internal;
 
 /**
  * Thrown when a command is not found
@@ -20,7 +20,7 @@ use Whoops\Exception\ControlsTraceOutput;
  *
  * @author Márk Sági-Kazár <mark.sagikazar@gmail.com>
  */
-class CommandNotFound extends \RuntimeException implements ControlsTraceOutput
+class CommandNotFound extends \RuntimeException implements Internal
 {
     /**
      * Name of the command
