@@ -11,8 +11,9 @@
 
 namespace Indigo\Console;
 
-use Ulrichsg\Getopt\Getopt;
 use League\CLImate\CLImate;
+use Ulrichsg\Getopt\Getopt;
+use Ulrichsg\Getopt\Option;
 use Whoops\Run as Whoops;
 
 /**
@@ -60,7 +61,7 @@ class Application
      * @param string $name
      * @param string $version
      */
-    public function __construct($name = 'UNKNOWN', $version = 'UNKNOWN')
+    public function __construct($name = null, $version = null)
     {
         $this->name = $name;
         $this->version = $version;
@@ -87,6 +88,23 @@ class Application
     public function getVersion()
     {
         return $this->version;
+    }
+
+    /**
+     * Returns a string representation of the application info
+     *
+     * @return string
+     */
+    public function getLongVersion()
+    {
+        $name = $this->getName();
+        $version = $this->getVersion();
+
+        if (!is_null($name) and !is_null($name)) {
+            return sprintf('<info>%s</info> version <comment>%s</comment>', $name, $version);
+        }
+
+        return '<info>Console application</info>';
     }
 
     /**
@@ -190,22 +208,51 @@ class Application
     /**
      * Runs the application
      *
-     * @param Getopt  $getopt
+     * @param Getopt  $input
      * @param CLImate $output
      *
      * @return integer
      */
-    public function run(Getopt $getopt = null, CLImate $output = null)
+    public function run(Getopt $input = null, CLImate $output = null)
     {
+        if (is_null($input)) {
+            $input = new Getopt;
+        }
+
         if (is_null($output)) {
             $output = new CLImate;
         }
 
-        // if version option is passed return it
+        $input->addOptions($this->getDefaultOptions());
 
-        // The first argument is always the command name
-        // except help option is passed
-        $name = array_shift($args);
+        $input->parse();
+
+        $exitCode = $this->execute($input, $output);
+
+        return $this->doExit($exitCode);
+    }
+
+    /**
+     * Execution logic
+     *
+     * @param Getopt  $input
+     * @param CLImate $output
+     *
+     * @return mixed
+     */
+    protected function execute(Getopt $input, CLImate $output)
+    {
+        if ($input['version']) {
+            $output->write($this->getLongVersion());
+
+            return 0;
+        }
+
+        if ($input['help']) {
+            $name = 'help';
+        } else {
+            $name = $input->getOperand(0);
+        }
 
         if (empty($name)) {
             $name = $this->defaultCommand;
@@ -215,9 +262,7 @@ class Application
 
         // Argument/option validation should be here?
 
-        $exitCode = $command->execute($args, $output);
-
-        return $this->doExit($exitCode);
+        return $command->execute($input, $output);
     }
 
     /**
@@ -227,7 +272,7 @@ class Application
      */
     protected function getDefaultCommands()
     {
-        return [new Command\Ls($this)];
+        return [new Command\Help($this), new Command\Ls($this)];
     }
 
     /**
@@ -242,6 +287,19 @@ class Application
         if (!$this->hasCommand($command)) {
             throw new CommandNotFound($command, $this->commands);
         }
+    }
+
+    /**
+     * Returns the default option definitions
+     *
+     * @return Option[]
+     */
+    private function getDefaultOptions()
+    {
+        return [
+            new Option('h', 'help', Getopt::NO_ARGUMENT, 'Display this help message.'),
+            new Option('V', 'version', Getopt::NO_ARGUMENT, 'Display this application version.'),
+        ];
     }
 
     /**

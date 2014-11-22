@@ -16,21 +16,21 @@ use League\CLImate\CLImate;
 use Ulrichsg\Getopt\Getopt;
 
 /**
- * List commands of application
+ * Help commands of application
  *
  * @author Márk Sági-Kazár <mark.sagikazar@gmail.com>
  */
-class Ls extends Basic
+class Help extends Basic
 {
     /**
      * {@inheritdoc}
      */
-    protected $name = 'list';
+    protected $name = 'help';
 
     /**
      * {@inheritdoc}
      */
-    protected $description = 'Lists commands registered in application';
+    protected $description = 'Displays help for a command';
 
     /**
      * Current application context
@@ -52,17 +52,6 @@ class Ls extends Basic
      */
     public function execute(Getopt $input, CLImate $output)
     {
-        $commands = $this->application->getCommands();
-        $table = [];
-
-        foreach ($commands as $name => $command) {
-            $table[] = [
-                sprintf('<info>%s</info>', $name),
-                $command->getDescription(),
-            ];
-        }
-
-        $output->comment('Available commands:');
-        $output->table($table);
+        $output->write('Help for '.$input->getOperand(1));
     }
 }

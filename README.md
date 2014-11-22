@@ -15,6 +15,7 @@ This package is a simple console implementation concentrating on the running log
 - Output formatting ([CLImate](http://climate.thephpleague.com))
 - Events ([League\Event](http://event.thephpleague.com))
 - Exception handling ([Whoops](http://filp.github.io/whoops/))
+- Option parsing ([Getopt.php](http://ulrichsg.github.io/getopt-php/))
 
 
 **Note:** The main reason for using 3rd party libraries is to avoid the not-invented-here syndrome and its consequences. Since they are 3rd party, I cannot support them. That said I am going to report any upcoming issues, also will try to fix them if possible.
