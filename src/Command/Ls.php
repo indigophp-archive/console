@@ -13,7 +13,6 @@ namespace Indigo\Console\Command;
 
 use Indigo\Console\Application;
 use League\CLImate\CLImate;
-use Ulrichsg\Getopt\Getopt;
 
 /**
  * List commands of application
@@ -50,7 +49,7 @@ class Ls extends Basic
     /**
      * {@inheritdoc}
      */
-    public function execute(Getopt $input, CLImate $output)
+    public function execute(CLImate $output)
     {
         $commands = $this->application->getCommands();
         $table = [];

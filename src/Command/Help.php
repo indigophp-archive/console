@@ -13,7 +13,6 @@ namespace Indigo\Console\Command;
 
 use Indigo\Console\Application;
 use League\CLImate\CLImate;
-use Ulrichsg\Getopt\Getopt;
 
 /**
  * Help commands of application
@@ -50,8 +49,8 @@ class Help extends Basic
     /**
      * {@inheritdoc}
      */
-    public function execute(Getopt $input, CLImate $output)
+    public function execute(CLImate $climate)
     {
-        $output->write('Help for '.$input->getOperand(1));
+        $climate->usage();
     }
 }

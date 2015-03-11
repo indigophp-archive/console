@@ -52,10 +52,9 @@ interface Command
      * Till then use func_get_args() and shift the first argument
      * Optional arguments can also be used as the validation of arguments is done elsewhere
      *
-     * @param Getopt  $input
      * @param CLImate $output
      *
      * @return integer Exit code
      */
-    public function execute(Getopt $input, CLImate $output);
+    public function execute(CLImate $output);
 }

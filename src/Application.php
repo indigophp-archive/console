@@ -12,9 +12,7 @@
 namespace Indigo\Console;
 
 use League\CLImate\CLImate;
-use Ulrichsg\Getopt\Getopt;
-use Ulrichsg\Getopt\Option;
-use Whoops\Run as Whoops;
+use League\BooBoo\Runner;
 
 /**
  * Console application
@@ -34,9 +32,9 @@ class Application
     protected $version;
 
     /**
-     * @var Whoops
+     * @var Runner
      */
-    protected $exceptionHandler;
+    protected $booboo;
 
     /**
      * @var Command[]
@@ -208,26 +206,22 @@ class Application
     /**
      * Runs the application
      *
-     * @param Getopt  $input
-     * @param CLImate $output
+     * @param CLImate $climate
      *
      * @return integer
      */
-    public function run(Getopt $input = null, CLImate $output = null)
+    public function run(CLImate $climate = null)
     {
-        if (is_null($input)) {
-            $input = new Getopt;
+        if (is_null($climate)) {
+            $climate = new CLImate;
         }
 
-        if (is_null($output)) {
-            $output = new CLImate;
-        }
+        $climate->arguments->add($this->getDefaultArguments());
+        $climate->arguments->description($this->getLongVersion());
 
-        $input->addOptions($this->getDefaultOptions());
+        $climate->arguments->parse();
 
-        $input->parse();
-
-        $exitCode = $this->execute($input, $output);
+        $exitCode = $this->execute($climate);
 
         return $this->doExit($exitCode);
     }
@@ -235,23 +229,22 @@ class Application
     /**
      * Execution logic
      *
-     * @param Getopt  $input
-     * @param CLImate $output
+     * @param CLImate $climate
      *
      * @return mixed
      */
-    protected function execute(Getopt $input, CLImate $output)
+    protected function execute(CLImate $climate)
     {
-        if ($input['version']) {
-            $output->write($this->getLongVersion());
+        if ($climate->arguments->defined('version')) {
+            $climate->write($this->getLongVersion());
 
             return 0;
         }
 
-        if ($input['help']) {
+        if ($climate->arguments->defined('help')) {
             $name = 'help';
         } else {
-            $name = $input->getOperand(0);
+            $name = $climate->arguments->get('command');
         }
 
         if (empty($name)) {
@@ -262,7 +255,7 @@ class Application
 
         // Argument/option validation should be here?
 
-        return $command->execute($input, $output);
+        return $command->execute($climate);
     }
 
     /**
@@ -290,15 +283,30 @@ class Application
     }
 
     /**
-     * Returns the default option definitions
+     * Returns the default argument definitions
      *
-     * @return Option[]
+     * @return array
      */
-    private function getDefaultOptions()
+    private function getDefaultArguments()
     {
         return [
-            new Option('h', 'help', Getopt::NO_ARGUMENT, 'Display this help message.'),
-            new Option('V', 'version', Getopt::NO_ARGUMENT, 'Display this application version.'),
+            'help' => [
+                'prefix'      => 'h',
+                'longPrefix'  => 'help',
+                'description' => 'Display this help message',
+                'noValue'     => true,
+                'castTo'      => 'bool',
+            ],
+            'version' => [
+                'prefix'      => 'V',
+                'longPrefix'  => 'version',
+                'description' => 'Display this application version',
+                'noValue'     => true,
+                'castTo'      => 'bool',
+            ],
+            'command' => [
+                'description' => 'Command name',
+            ],
         ];
     }
 

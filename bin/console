@@ -18,12 +18,6 @@ if (is_dir($vendor = __DIR__ . '/../vendor')) {
     );
 }
 
-array_shift($argv);
+$app = new Indigo\Console\Application('Indigo Console', '0.1.0');
 
-$app = new Indigo\Console\Application('Test application', '0.1.0');
-
-$whoops = new Whoops\Run;
-$whoops->pushHandler(new Whoops\Handler\ConsoleHandler);
-$app->setExceptionHandler($whoops);
-
-$app->run($argv);
+$app->run();
